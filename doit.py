@@ -23,7 +23,8 @@ CLIENT_SECRET = os.environ['CLIENT_SECRET']
 API_KEY = os.environ['API_KEY'] 
 SEARCH_ID = os.environ['SEARCH_ID'] 
 TODAY = datetime.date.today().strftime('%Y-%m-%d')
-#TODAY = '2024-04-28'
+#TODAY = '2024-05-20'
+TODAY = '2024-06-11'
 
 mlinks = []
 
@@ -186,7 +187,7 @@ if __name__ == "__main__":
     client = OpenAI()
     check_images(directory, client)
 
-    with open('./links.json', 'w') as file:
+    with open(f'./links_{TODAY}.json', 'w') as file:
         _str = f'{{\n"{TODAY}":\n'
         file.write(_str)
         _str = '['

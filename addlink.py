@@ -5,32 +5,37 @@ from datetime import datetime, timedelta
 
 WEB_DIR = os.environ['WEB_DIR']
 
-def file_created_yesterday_or_earlier(file_path):
-    """
-    Checks if a file was created yesterday.
+def get_previous_day(date_str):
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    previous_day = date_obj - timedelta(days=1)
+    return previous_day.strftime('%Y-%m-%d')
+
+def find_oldest_links_json():
+    oldest_date = None
+    oldest_file = None
     
-    Args:
-        file_path (str): The path to the file.
-        
-    Returns:
-        bool: True if the file was created yesterday, False otherwise.
-    """
-    try:
-        # Get the creation time of the file
-        creation_time = os.path.getctime(file_path)
-        
-        # Convert the creation time to a datetime object
-        creation_datetime = datetime.fromtimestamp(creation_time)
-        
-        # Calculate the date of yesterday
-        yesterday = datetime.now() - timedelta(days=1)
-        
-        # Check if the file was created yesterday
-        return creation_datetime.date() <= yesterday.date()
+    # Loop through each file in the directory
+    for filename in os.listdir('.'):
+        if filename.startswith('links_') and filename.endswith('.json'):
+            # Extract the date part from the filename
+            date_str = filename[6:-5]  # Remove the 'links_' prefix and '.json' suffix
+            try:
+                # Convert the date string to a datetime object
+                file_date = datetime.strptime(date_str, '%Y-%m-%d')
+                # Check if this file's date is older or if it's the first file being checked
+                if oldest_date is None or file_date < oldest_date:
+                    oldest_date = file_date
+                    oldest_file = filename
+            except ValueError:
+                print(f"Skipping invalid date format in file name: {filename}")
     
-    except (OSError, ValueError):
-        # If there's an error accessing the file, return False
-        return False
+    # Print the oldest file
+    if oldest_file:
+        print(f"The oldest file is: {oldest_file}")
+        return (oldest_file, oldest_date.date())
+    else:
+        print("No valid dated files found.")
+        return (None, None)
 
 # Function to read JSON data from a file
 def read_json_file(filename):
@@ -46,11 +51,12 @@ def contains_financial_news_source(text):
     return False
 
 # Function to generate HTML with embedded CSS from the JSON data
-def generate_html(data, prev_link):
+def generate_html(data):
     html_content = '''
 <html>
 <head>
     <title>URLs by Date</title>
+
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         h1 { color: #333366; }
@@ -59,19 +65,40 @@ def generate_html(data, prev_link):
         li { margin: 10px 0; }
         a { text-decoration: none; color: #0066cc; }
         a:hover { text-decoration: underline; }
+        img {
+            display: block;
+            margin: auto;
+            /* Set width to 8.8% of its original size to achieve a smaller scale */
+            width: 8.8%;
+            height: auto;
+        }
     </style>
+
+    <script>
+        // Function to hide the link and open it in a new tab
+        function hideAndOpenLink(event) {
+            // Prevent the default link action
+            event.preventDefault();
+            // Hide the clicked link
+            event.target.style.display = 'none';
+            // Open the link in a new tab
+            window.open(event.target.href, '_blank');
+        }
+    </script>
 </head>
 <body>
-    <h1>URLs Grouped by Date</h1>
+<img src="choo-choo-train.webp" alt="Choo Choo Train">
 '''
+    
     for date, urls in data.items():
         html_content += f'<h2>{date}</h2>\n<ul>\n'
         for url in urls:
             ulist = eval(url)
             if contains_financial_news_source(ulist[0]): 
-                html_content += f'<li><a href="{ulist[0]}">{ulist[0]}</a>  [ {ulist[1]} ]</li>\n'
+                html_content += f'<li><a href="{ulist[0]}"  onclick="hideAndOpenLink(event)">{ulist[0]}</a>  [ {ulist[1]} ]</li>\n'
         
-        html_content += f'<li><a href="{prev_link}">{prev_link}</a></li>\n'
+        prev_date = get_previous_day(date)
+        html_content += f'<li><a href="{prev_date}.html">http://www.choo-choo-train.com/{prev_date}.html</a></li>'
         html_content += '</ul>\n'
     html_content += '</body>\n</html>'
     return html_content
@@ -82,34 +109,32 @@ def save_html(filename, content):
         file.write(content)
 
 # Main function to process the JSON file and generate HTML
-def main(json_filename):
+def main(json_filename, old_date):
     # Read JSON from file
     data = read_json_file(json_filename)
     
     print(data)
-    # Generate the HTML file name based on the current date
-    yesterday_date = (datetime.today()-timedelta(days=1)).strftime('%Y_%m_%d')
-    prev_json =  f'{WEB_DIR}/data/links_{yesterday_date}.json'
-    prev_file = f'{WEB_DIR}/data/links_{yesterday_date}.html'
-    prev_link = f'http://www.choo-choo-train.com/data/links_{yesterday_date}.html'
 
     # Generate HTML content from JSON data
-    html_content = generate_html(data, prev_link)
+    html_content = generate_html(data)
     
-    # check if the file: links.html was created yesterday or earlier 
-    if file_created_yesterday_or_earlier('{WEB_DIR}/links.html'):
-        os.rename('{WEB_DIR}/links.html', prev_file)
+    os.rename(json_filename, f'{WEB_DIR}/data/links_{old_date}.json')
 
-    if file_created_yesterday_or_earlier('./links.json'):
-        shutil.copy('./links.json', prev_json)
-
-    html_filename = f'{WEB_DIR}/links.html'
+    html_filename = f'{WEB_DIR}/{old_date}.html'
     
     # Save the generated HTML to a file
     save_html(html_filename, html_content)
 
+    os.unlink(f'{WEB_DIR}/index.html')
+    os.symlink(html_filename, f'{WEB_DIR}/index.html')
+    shutil.copy(html_filename, f'{WEB_DIR}/data/{old_date}.html')
+
 # Example usage
 if __name__ == '__main__':
-    json_filename = './links.json'  # Change to the path of your JSON file
-    main(json_filename)
+    (json_filename, old_date) = find_oldest_links_json()  # Change to the path of your JSON file
+    print(old_date)
+    if json_filename:
+        main(json_filename, old_date)
+    else:
+        print('No json file to process')
 
