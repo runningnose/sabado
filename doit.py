@@ -24,7 +24,7 @@ API_KEY = os.environ['API_KEY']
 SEARCH_ID = os.environ['SEARCH_ID'] 
 TODAY = datetime.date.today().strftime('%Y-%m-%d')
 #TODAY = '2024-05-20'
-TODAY = '2024-06-11'
+TODAY = '2024-06-19'
 
 mlinks = []
 

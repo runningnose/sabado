@@ -95,7 +95,7 @@ def generate_html(data):
         for url in urls:
             ulist = eval(url)
             if contains_financial_news_source(ulist[0]): 
-                html_content += f'<li><a href="{ulist[0]}"  onclick="hideAndOpenLink(event)">{ulist[0]}</a>  [ {ulist[1]} ]</li>\n'
+                html_content += f'<li><a href="{ulist[0]}"  onclick="hideAndOpenLink(event)">{ulist[0]}</a>  [ {ulist[1]} ] <a href="http://www.RemovePaywall.com/{ulist[0]}" target="_blank">RemovedPaywall</a></li>\n'
         
         prev_date = get_previous_day(date)
         html_content += f'<li><a href="{prev_date}.html">http://www.choo-choo-train.com/{prev_date}.html</a></li>'
