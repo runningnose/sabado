@@ -39,7 +39,7 @@ def find_oldest_links_json():
 
 # Function to read JSON data from a file
 def read_json_file(filename):
-    with open(filename, 'r') as file:
+    with open(filename, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 def contains_financial_news_source(text):
@@ -55,6 +55,7 @@ def generate_html(data):
     html_content = '''
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>URLs by Date</title>
 
     <style>
@@ -105,7 +106,7 @@ def generate_html(data):
 
 # Function to save HTML content to a file
 def save_html(filename, content):
-    with open(filename, 'w') as file:
+    with open(filename, 'w', encoding='utf-8') as file:
         file.write(content)
 
 # Main function to process the JSON file and generate HTML
