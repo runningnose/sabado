@@ -24,7 +24,7 @@ API_KEY = os.environ['API_KEY']
 SEARCH_ID = os.environ['SEARCH_ID'] 
 TODAY = datetime.date.today().strftime('%Y-%m-%d')
 #TODAY = '2024-05-20'
-TODAY = '2024-06-19'
+TODAY = '2024-07-26'
 
 mlinks = []
 
@@ -111,18 +111,22 @@ def get_image_txt(filename, client):
     )
     '''
    
+    #model="gpt-4-turbo",
     response = client.chat.completions.create(
-      model="gpt-4-turbo",
+      model="gpt-4o",
       messages=[
             {"role": "user", "content": [
-                {"type": "text", "text": "find the title of articles shown in the picture, return them as python list not other text, no need to add 'article_titles ='"},   
+                {"type": "text", "text": "find the title of articles shown in the picture, return them as python list not other text, no need to add 'article_titles ='. Ignore the items where there are crossed out markings. Follow the following rules: If the image has text like 'wsj', 'cnbc', 'the new york times', append them into the result. For example, if the text has: 'Fog of Confusion' and there is 'wsj' shown in the image, then return the result as: 'Fog of confusion wsj'. If there is a big capital letter 'B' at the bottom left of the image, then append 'bloomberg' to the result. For example, if the text has: 'Can Airbus avoid persecution?' and the image has a big captital letter 'B' at the bottom left of the image, then return the result as: 'Can Airbus avoid persection bloomberg'"},  
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
             ]}
         ],
       max_tokens=600,
     )
 
-    nl = eval((response.choices[0].message.content).replace("```python\n", "").replace("\n```", ""))
+    try:
+        nl = eval((response.choices[0].message.content).replace("```python\n", "").replace("\n```", ""))
+    except:
+        nl = ''
 
     for l in nl:
         print(l)
@@ -193,7 +197,8 @@ if __name__ == "__main__":
         _str = '['
         for l in mlinks:
            _str += f'\"{l}\",\n'
-        _str = _str[:-2]
+        if _str != '[':
+            _str = _str[:-2]
         _str += ']\n}\n'
         file.write(_str)
 
