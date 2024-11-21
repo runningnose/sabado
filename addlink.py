@@ -1,21 +1,32 @@
+#!/usr/local/bin/python3
+
 import json
 import shutil
 import os
 from datetime import datetime, timedelta
 
 WEB_DIR = os.environ['WEB_DIR']
+HOME = os.environ['HOME']
 
 def get_previous_day(date_str):
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
     previous_day = date_obj - timedelta(days=1)
     return previous_day.strftime('%Y-%m-%d')
 
+def get_next_day(date_str):
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    next_day = date_obj + timedelta(days=1)
+    if next_day > datetime.today():
+        return None
+    return next_day.strftime('%Y-%m-%d')
+
 def find_oldest_links_json():
     oldest_date = None
     oldest_file = None
     
     # Loop through each file in the directory
-    for filename in os.listdir('.'):
+    for filename in os.listdir(f'{HOME}/sabado'):
+    #for filename in os.listdir(f'/tmp'):
         if filename.startswith('links_') and filename.endswith('.json'):
             # Extract the date part from the filename
             date_str = filename[6:-5]  # Remove the 'links_' prefix and '.json' suffix
@@ -31,6 +42,8 @@ def find_oldest_links_json():
     
     # Print the oldest file
     if oldest_file:
+        oldest_file = f'{HOME}/sabado/' + oldest_file
+        #oldest_file = '/tmp/' + oldest_file
         print(f"The oldest file is: {oldest_file}")
         return (oldest_file, oldest_date.date())
     else:
@@ -88,7 +101,7 @@ def generate_html(data):
     </script>
 </head>
 <body>
-<img src="choo-choo-train.webp" alt="Choo Choo Train">
+<a href="http://www.choo-choo-train.com"><img src="choo-choo-train.webp" alt="Choo Choo Train"></a>
 '''
     
     for date, urls in data.items():
@@ -100,7 +113,12 @@ def generate_html(data):
         
         prev_date = get_previous_day(date)
         html_content += f'<li><a href="{prev_date}.html">http://www.choo-choo-train.com/{prev_date}.html</a></li>'
+
+        next_date = get_next_day(date)
+        if next_date:
+           html_content += f'<li><a href="{next_date}.html">http://www.choo-choo-train.com/{next_date}.html</a></li>'
         html_content += '</ul>\n'
+
     html_content += '</body>\n</html>'
     return html_content
 

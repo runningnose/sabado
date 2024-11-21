@@ -1,3 +1,5 @@
+#!/usr/local/bin/python3
+
 import sys
 import os
 import base64
@@ -22,9 +24,11 @@ CLIENT_ID = os.environ['CLIENT_ID']
 CLIENT_SECRET = os.environ['CLIENT_SECRET'] 
 API_KEY = os.environ['API_KEY'] 
 SEARCH_ID = os.environ['SEARCH_ID'] 
+HOME = os.environ['HOME'] 
+
 TODAY = datetime.date.today().strftime('%Y-%m-%d')
-#TODAY = '2024-05-20'
-TODAY = '2024-07-26'
+
+#TODAY = '2024-10-29'
 
 mlinks = []
 
@@ -116,7 +120,7 @@ def get_image_txt(filename, client):
       model="gpt-4o",
       messages=[
             {"role": "user", "content": [
-                {"type": "text", "text": "find the title of articles shown in the picture, return them as python list not other text, no need to add 'article_titles ='. Ignore the items where there are crossed out markings. Follow the following rules: If the image has text like 'wsj', 'cnbc', 'the new york times', append them into the result. For example, if the text has: 'Fog of Confusion' and there is 'wsj' shown in the image, then return the result as: 'Fog of confusion wsj'. If there is a big capital letter 'B' at the bottom left of the image, then append 'bloomberg' to the result. For example, if the text has: 'Can Airbus avoid persecution?' and the image has a big captital letter 'B' at the bottom left of the image, then return the result as: 'Can Airbus avoid persection bloomberg'"},  
+                {"type": "text", "text": "If there is a black arrow that points to the upper right direction, then do not do anything. Otherwise, find the title of articles shown in the picture, return them as python list not other text, no need to add 'article_titles ='. Ignore the items where there are crossed out markings. Follow the following rules: If the image has text like 'wsj', 'cnbc', 'the new york times', append them into the result. For example, if the text has: 'Fog of Confusion' and there is 'wsj' shown in the image, then return the result as: 'Fog of confusion wsj'. If there is a big capital letter 'B' at the bottom left of the image, then append 'bloomberg' to the result. For example, if the text has: 'Can Airbus avoid persecution?' and the image has a big captital letter 'B' at the bottom left of the image, then return the result as: 'Can Airbus avoid persection bloomberg'"},  
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
             ]}
         ],
@@ -172,7 +176,7 @@ def check_images(directory, client):
         
                 camera_make = get_camera_make(file_path)
         
-                if camera_make != 'Apple' or camera_make == 'No EXIF data available':
+                if (camera_make != 'Apple' and  camera_make != 'Meta View') or camera_make == 'No EXIF data available':
                     print(f"Process this screenshot:{filename}, make:{camera_make}")
                     get_image_txt(file_path, client)
                 else:
@@ -182,7 +186,7 @@ def check_images(directory, client):
 if __name__ == "__main__":
     service = authenticate_google_photos()
     print(service)
-    directory = './data/photos/{}'.format(TODAY)
+    directory = f'{HOME}/sabado/data/photos/{TODAY}'
     photos = get_photos_by_date(service, TODAY)
     for photo in photos:
         download_photo(photo['baseUrl'] + '=d', photo['id'], directory)
@@ -191,7 +195,8 @@ if __name__ == "__main__":
     client = OpenAI()
     check_images(directory, client)
 
-    with open(f'./links_{TODAY}.json', 'w') as file:
+    with open(f'{HOME}/sabado/links_{TODAY}.json', 'w') as file:
+    #with open(f'/tmp/links_{TODAY}.json', 'w') as file:
         _str = f'{{\n"{TODAY}":\n'
         file.write(_str)
         _str = '['

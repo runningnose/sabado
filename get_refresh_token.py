@@ -1,3 +1,5 @@
+#!/usr/local/bin/python3
+
 import os
 from google_auth_oauthlib.flow import Flow
 import google.auth.transport.requests
