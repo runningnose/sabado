@@ -16,8 +16,8 @@ def get_previous_day(date_str):
 def get_next_day(date_str):
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
     next_day = date_obj + timedelta(days=1)
-    if next_day > datetime.today():
-        return None
+    #if next_day > datetime.today():
+    #    return None
     return next_day.strftime('%Y-%m-%d')
 
 def find_oldest_links_json():

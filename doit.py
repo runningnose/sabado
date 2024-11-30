@@ -28,7 +28,7 @@ HOME = os.environ['HOME']
 
 TODAY = datetime.date.today().strftime('%Y-%m-%d')
 
-#TODAY = '2024-10-29'
+#TODAY = '2024-11-19'
 
 mlinks = []
 
@@ -120,7 +120,7 @@ def get_image_txt(filename, client):
       model="gpt-4o",
       messages=[
             {"role": "user", "content": [
-                {"type": "text", "text": "If there is a black arrow that points to the upper right direction, then do not do anything. Otherwise, find the title of articles shown in the picture, return them as python list not other text, no need to add 'article_titles ='. Ignore the items where there are crossed out markings. Follow the following rules: If the image has text like 'wsj', 'cnbc', 'the new york times', append them into the result. For example, if the text has: 'Fog of Confusion' and there is 'wsj' shown in the image, then return the result as: 'Fog of confusion wsj'. If there is a big capital letter 'B' at the bottom left of the image, then append 'bloomberg' to the result. For example, if the text has: 'Can Airbus avoid persecution?' and the image has a big captital letter 'B' at the bottom left of the image, then return the result as: 'Can Airbus avoid persection bloomberg'"},  
+                {"type": "text", "text": "If there is a black arrow that points to the upper right direction, then do not do anything. Otherwise, find the title of articles shown in the picture, return them as python list not other text, no need to add 'article_titles ='. Ignore the items where there are red crossed out markings. Follow the following rules: If the image has text like 'wsj', 'cnbc', 'the new york times', 'Hacker News', 'news.ycombinator.com', append them into the result. For example, if the text has: 'Fog of Confusion' and there is 'wsj' shown in the image, then return the result as: 'Fog of confusion wsj'. If there is a big capital letter 'B' at the bottom left of the image, then append 'bloomberg' to the result. For example, if the text has: 'Can Airbus avoid persecution?' and the image has a big captital letter 'B' at the bottom left of the image, then return the result as: 'Can Airbus avoid persection bloomberg'. If the text has: 'news.ycombinator.com' at the top of the picture, then pick only the items where there is a green dot at the beginning of the line. For example, if the line starts with '31. La Basicillica Di San Pietro', and '31' is marked in green marker, then return the result as: 'La Basicillica Di San Pietro Hacker news'"},  
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
             ]}
         ],
